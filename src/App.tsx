@@ -1,38 +1,94 @@
-import * as React from "react"
+/**
+ * Main app component
+ */
+
 import {
   ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
+  Flex,
+  Heading,
   theme,
-} from "@chakra-ui/react"
-import { ColorModeSwitcher } from "./ColorModeSwitcher"
-import { Logo } from "./Logo"
+  useMediaQuery,
+} from "@chakra-ui/react";
+import * as React from "react";
+import { Answer, Questions } from "./api/fetchData";
+import { ColorModeSwitcher } from "./ColorModeSwitcher";
+import Quiz from "./components/quiz";
+import Result from "./components/result";
+import Setup from "./components/setup";
+import { QuizContext, Review } from "./contexts/QuizContext";
+import useLocalStorage from "./hooks/useLocalStorage";
 
-export const App = () => (
-  <ChakraProvider theme={theme}>
-    <Box textAlign="center" fontSize="xl">
-      <Grid minH="100vh" p={3}>
-        <ColorModeSwitcher justifySelf="flex-end" />
-        <VStack spacing={8}>
-          <Logo h="40vmin" pointerEvents="none" />
-          <Text>
-            Edit <Code fontSize="xl">src/App.tsx</Code> and save to reload.
-          </Text>
-          <Link
-            color="teal.500"
-            href="https://chakra-ui.com"
-            fontSize="2xl"
-            target="_blank"
-            rel="noopener noreferrer"
+const App: React.FC = () => {
+  const [totalQuestions, setTotalQuestions] = useLocalStorage(
+    "total-questions",
+    5
+  );
+  const [category, setCategory] = React.useState("");
+  const [difficulty, setDifficulty] = React.useState("");
+  const [questions, setQuestions] = useLocalStorage<Questions[]>(
+    "questions",
+    []
+  );
+  const [userAnswers, setUserAnswers] = useLocalStorage<Answer[]>(
+    "user-answers",
+    []
+  );
+  const [questionNumber, setQuestionNumber] = useLocalStorage(
+    "question-number",
+    0
+  );
+  const [score, setScore] = useLocalStorage("score", 0);
+  const [status, setStatus] = useLocalStorage("status", "setup");
+  const [reviewQuestions, setReviewQuestions] = useLocalStorage<Review[]>(
+    "review-questions",
+    []
+  );
+
+  const [isLargerThan480] = useMediaQuery("(min-width: 480px)");
+
+  return (
+    <ChakraProvider theme={theme}>
+      <Flex direction="column" justify="space-between" w="100%" minH="100vh">
+        <Flex justify="space-between" align="center" w="100%">
+          <Heading size={isLargerThan480 ? "xl" : "lg"} px="8px">
+            React Trivia API Quiz
+          </Heading>
+          <ColorModeSwitcher />
+        </Flex>
+        <Flex justify="center" align="center">
+          <QuizContext.Provider
+            value={{
+              category,
+              setCategory,
+              difficulty,
+              setDifficulty,
+              questionNumber,
+              setQuestionNumber,
+              questions,
+              setQuestions,
+              reviewQuestions,
+              setReviewQuestions,
+              score,
+              setScore,
+              status,
+              setStatus,
+              totalQuestions,
+              setTotalQuestions,
+              userAnswers,
+              setUserAnswers,
+            }}
           >
-            Learn Chakra
-          </Link>
-        </VStack>
-      </Grid>
-    </Box>
-  </ChakraProvider>
-)
+            <Flex justify="center" align="center" maxW="500px" w="100%">
+              {status === "setup" && <Setup />}
+              {status === "quiz" && <Quiz />}
+              {status === "result" && <Result />}
+            </Flex>
+          </QuizContext.Provider>
+        </Flex>
+        <Flex maxH="150px" grow={1} />
+      </Flex>
+    </ChakraProvider>
+  );
+};
+
+export default App;
