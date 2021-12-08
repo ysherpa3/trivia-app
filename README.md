@@ -2,7 +2,7 @@
 
 Trivia quiz game built with React, Chaka-UI, and questions from the [Open Trivia Database](https://opentdb.com/).
 
-## Setup Options
+## Options
 
 - Number of questions (default: 5)
 - Category (default: any)
