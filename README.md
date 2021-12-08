@@ -1,6 +1,6 @@
 # React Trivia App
 
-Trivia quiz game built with React, Chaka-UI, and questions from the Open Trivia Database.
+Trivia quiz game built with React, Chaka-UI, and questions from the [Open Trivia Database](https://opentdb.com/).
 
 ## Setup Options
 
