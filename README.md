@@ -1,6 +1,6 @@
 # Trivia Challenge
 
-A Next.js trivia game powered by the [Open Trivia Database](https://opentdb.com).
+Next.js 16 trivia quiz app using the [Open Trivia Database API](https://opentdb.com). Configure question count, category, and difficulty; play through questions with live score tracking; review answers at the end.
 
 ## Features
 
