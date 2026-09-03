@@ -1,3 +1,4 @@
+import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 import type { GameResult } from "@/types";
 
@@ -20,7 +21,7 @@ export function ResultsSummary({ result, onPlayAgain }: ResultsSummaryProps) {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      <div className="flex flex-col items-center gap-1.5 py-5 sm:py-6 bg-white rounded-2xl shadow-sm border border-[#EDE0D0]">
+      <div className="flex flex-col items-center gap-1.5 py-5 sm:py-6 bg-white rounded-2xl shadow-sm border border-card-line">
         <p
           className="text-5xl sm:text-6xl font-bold text-gray-900 tabular-nums"
           aria-label={`${score} out of ${total}`}
@@ -33,7 +34,7 @@ export function ResultsSummary({ result, onPlayAgain }: ResultsSummaryProps) {
             /{total}
           </span>
         </p>
-        <p className="text-[#B84040] font-semibold text-lg">{verdict(pct)}</p>
+        <p className="text-accent font-semibold text-lg">{verdict(pct)}</p>
         <p className="text-gray-600 text-sm">{pct}% correct</p>
       </div>
 
@@ -44,21 +45,21 @@ export function ResultsSummary({ result, onPlayAgain }: ResultsSummaryProps) {
             className={cn(
               "rounded-xl p-4 border",
               ua.correct
-                ? "border-[#4ECDC4]/40 bg-[#4ECDC4]/10"
-                : "border-[#FF6B6B]/40 bg-[#FF6B6B]/10",
+                ? "border-correct/40 bg-correct/10"
+                : "border-brand/40 bg-brand/10",
             )}
           >
             <p className="text-sm text-gray-700 mb-2.5">
               {ua.question.question}
             </p>
             <div className="flex flex-col gap-1 text-xs">
-              <p className="text-[#1B7A73] font-medium">
+              <p className="text-correct-ink font-medium">
                 <span aria-hidden="true">✓ </span>
                 <span className="sr-only">Correct answer: </span>
                 {ua.question.correct_answer}
               </p>
               {!ua.correct && (
-                <p className="text-[#B84040] font-medium">
+                <p className="text-accent font-medium">
                   <span aria-hidden="true">✗ </span>
                   <span className="sr-only">Your answer: </span>
                   {ua.selected}
@@ -69,12 +70,9 @@ export function ResultsSummary({ result, onPlayAgain }: ResultsSummaryProps) {
         ))}
       </div>
 
-      <button
-        onClick={onPlayAgain}
-        className="w-full py-3 rounded-xl bg-[#FF6B6B] hover:bg-[#e85555] text-gray-900 font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2"
-      >
+      <Button onClick={onPlayAgain} className="w-full py-3">
         Play Again
-      </button>
+      </Button>
     </div>
   );
 }

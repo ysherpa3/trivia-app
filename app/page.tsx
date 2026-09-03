@@ -1,18 +1,6 @@
-"use client";
-import { useRouter } from "next/navigation";
 import { SetupForm } from "@/components/SetupForm";
-import type { GameSettings } from "@/types";
 
 export default function HomePage() {
-  const router = useRouter();
-
-  function handleStart(settings: GameSettings) {
-    const params = new URLSearchParams({ amount: String(settings.amount) });
-    if (settings.category) params.set("category", settings.category);
-    if (settings.difficulty) params.set("difficulty", settings.difficulty);
-    router.push(`/play?${params}`);
-  }
-
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:py-12">
       <div className="w-full max-w-md flex flex-col gap-6">
@@ -24,8 +12,8 @@ export default function HomePage() {
             Set your preferences and see what you know
           </p>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#EDE0D0]">
-          <SetupForm onStart={handleStart} />
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-card-line">
+          <SetupForm />
         </div>
         <p className="text-center text-xs text-gray-500">
           Questions from{" "}

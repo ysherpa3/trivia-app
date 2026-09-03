@@ -9,9 +9,9 @@ interface QuestionCardProps {
 }
 
 const difficultyColor: Record<Question["difficulty"], string> = {
-  easy: "text-[#1B7A73]",
+  easy: "text-correct-ink",
   medium: "text-yellow-700",
-  hard: "text-[#B84040]",
+  hard: "text-accent",
 };
 
 export function QuestionCard({
@@ -22,21 +22,21 @@ export function QuestionCard({
 }: QuestionCardProps) {
   function buttonStyle(ans: string) {
     if (feedbackAnswer === null) {
-      return "bg-[#F5EEE6] text-gray-800 hover:bg-[#EDE4D8] cursor-pointer";
+      return "bg-surface text-gray-800 hover:bg-surface-hover cursor-pointer";
     }
     if (ans === question.correct_answer) {
-      return "bg-[#4ECDC4] text-gray-900";
+      return "bg-correct text-gray-900";
     }
     if (ans === feedbackAnswer) {
-      return "bg-[#FF6B6B] text-gray-900";
+      return "bg-brand text-gray-900";
     }
-    return "bg-[#F5EEE6] text-gray-500 cursor-default";
+    return "bg-surface text-gray-500 cursor-default";
   }
 
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#F5EEE6] text-gray-500">
+        <span className="text-xs px-2.5 py-0.5 rounded-full bg-surface text-gray-500">
           {question.category}
         </span>
         <span
@@ -54,9 +54,9 @@ export function QuestionCard({
       </h2>
 
       <div className="grid grid-cols-1 gap-3">
-        {answers.map((ans) => (
+        {answers.map((ans, i) => (
           <button
-            key={ans}
+            key={i}
             onClick={() => onAnswer(ans)}
             disabled={feedbackAnswer !== null}
             className={cn(
@@ -68,6 +68,16 @@ export function QuestionCard({
           </button>
         ))}
       </div>
+
+      {/* Feedback is otherwise colour-only. Rendered empty up front so the
+          region exists before it changes and actually gets announced. */}
+      <p aria-live="polite" className="sr-only">
+        {feedbackAnswer === null
+          ? ""
+          : feedbackAnswer === question.correct_answer
+            ? "Correct."
+            : `Incorrect. The correct answer is ${question.correct_answer}.`}
+      </p>
     </div>
   );
 }

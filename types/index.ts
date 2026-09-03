@@ -3,7 +3,11 @@ export interface Question {
   difficulty: "easy" | "medium" | "hard";
   question: string;
   correct_answer: string;
-  incorrect_answers: string[];
+  /**
+   * Presentation order, shuffled once on the server. Shuffling during render
+   * would make the server and client disagree and break hydration.
+   */
+  answers: string[];
 }
 
 export interface GameSettings {

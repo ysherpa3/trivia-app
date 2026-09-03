@@ -3,3 +3,16 @@
 @theme inline {
   --font-sans: var(--font-nunito);
 }
+
+@theme {
+  --color-page: #fff9f0;
+  --color-surface: #f5eee6;
+  --color-surface-hover: #ede4d8;
+  --color-brand: #ff6b6b;
+  --color-brand-hover: #e85555;
+  --color-accent: #b84040;
+  --color-correct: #4ecdc4;
+  --color-correct-ink: #1b7a73;
+  --color-card-line: #ede0d0;
+  --color-field-line: #e8ddd0;
+}
