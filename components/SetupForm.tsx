@@ -1,12 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AMOUNTS, CATEGORIES, DEFAULTS, DIFFICULTIES } from "@/constants";
+import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 import type { GameSettings } from "@/types";
 
-interface SetupFormProps {
-  onStart: (settings: GameSettings) => void;
-}
+// Shared by the amount and difficulty toggle rows.
+const toggleClass =
+  "flex-1 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2";
+const toggleOn = "bg-brand text-gray-900";
+const toggleOff = "bg-surface text-gray-700 hover:bg-surface-hover";
+
+// Options carry focus themselves (roving tabindex). An element with
+// role="option" must not contain a focusable child, so no buttons in here.
+const OPTION = 'li[role="option"]';
 
 function CategoryDropdown({
   value,
@@ -33,9 +41,9 @@ function CategoryDropdown({
   useEffect(() => {
     if (!open || !listRef.current) return;
     const selected = listRef.current.querySelector<HTMLElement>(
-      '[aria-selected="true"] button',
+      'li[aria-selected="true"]',
     );
-    const first = listRef.current.querySelector<HTMLElement>("li button");
+    const first = listRef.current.querySelector<HTMLElement>(OPTION);
     (selected ?? first)?.focus();
   }, [open]);
 
@@ -54,13 +62,22 @@ function CategoryDropdown({
     if (e.key === "Escape") setOpen(false);
   }
 
+  function choose(id: string) {
+    onChange(id);
+    closeAndReturn();
+  }
+
   function handleListKeyDown(e: React.KeyboardEvent<HTMLUListElement>) {
     const items = Array.from(
-      listRef.current?.querySelectorAll<HTMLElement>("li button") ?? [],
+      listRef.current?.querySelectorAll<HTMLElement>(OPTION) ?? [],
     );
     const idx = items.indexOf(document.activeElement as HTMLElement);
 
-    if (e.key === "Escape") {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      const id = items[idx]?.dataset.id;
+      if (id !== undefined) choose(id);
+    } else if (e.key === "Escape") {
       e.preventDefault();
       closeAndReturn();
     } else if (e.key === "ArrowDown") {
@@ -90,14 +107,14 @@ function CategoryDropdown({
         aria-controls="category-listbox"
         onClick={() => setOpen((o) => !o)}
         onKeyDown={handleTriggerKeyDown}
-        className="w-full flex items-center justify-between bg-white text-gray-800 border border-[#E8DDD0] rounded-lg px-3 py-2.5 text-base cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800"
+        className="w-full flex items-center justify-between bg-white text-gray-800 border border-field-line rounded-lg px-3 py-2.5 text-base cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800"
       >
         <span>{selected.name}</span>
         <svg
           aria-hidden="true"
           focusable="false"
           className={cn(
-            "w-4 h-4 text-[#B84040] shrink-0 transition-transform",
+            "w-4 h-4 text-accent shrink-0 transition-transform",
             open && "rotate-180",
           )}
           fill="none"
@@ -116,25 +133,24 @@ function CategoryDropdown({
           role="listbox"
           aria-label="Category"
           onKeyDown={handleListKeyDown}
-          className="absolute z-10 mt-1 w-full bg-white border border-[#E8DDD0] rounded-lg shadow-lg overflow-y-auto max-h-56"
+          className="absolute z-10 mt-1 w-full bg-white border border-field-line rounded-lg shadow-lg overflow-y-auto max-h-56"
         >
           {CATEGORIES.map((c) => (
-            <li key={c.id} role="option" aria-selected={c.id === value}>
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(c.id);
-                  closeAndReturn();
-                }}
-                className={cn(
-                  "w-full text-left px-3 py-2.5 text-sm transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-[#EDE4D8]",
-                  c.id === value
-                    ? "bg-[#FF6B6B] text-gray-900 font-medium"
-                    : "text-gray-800 hover:bg-[#F5EEE6]",
-                )}
-              >
-                {c.name}
-              </button>
+            <li
+              key={c.id}
+              role="option"
+              aria-selected={c.id === value}
+              tabIndex={-1}
+              data-id={c.id}
+              onClick={() => choose(c.id)}
+              className={cn(
+                "px-3 py-2.5 text-sm transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-inset focus:ring-gray-800",
+                c.id === value
+                  ? "bg-brand text-gray-900 font-medium"
+                  : "text-gray-800 hover:bg-surface",
+              )}
+            >
+              {c.name}
             </li>
           ))}
         </ul>
@@ -143,18 +159,27 @@ function CategoryDropdown({
   );
 }
 
-export function SetupForm({ onStart }: SetupFormProps) {
+export function SetupForm() {
+  const router = useRouter();
   const [settings, setSettings] = useState<GameSettings>(DEFAULTS);
 
   function set<K extends keyof GameSettings>(key: K, value: GameSettings[K]) {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
+  // Omitted params mean "any", which is what the empty option selects.
+  function start() {
+    const params = new URLSearchParams({ amount: String(settings.amount) });
+    if (settings.category) params.set("category", settings.category);
+    if (settings.difficulty) params.set("difficulty", settings.difficulty);
+    router.push(`/play?${params}`);
+  }
+
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onStart(settings);
+        start();
       }}
       className="flex flex-col gap-5 w-full"
     >
@@ -170,10 +195,8 @@ export function SetupForm({ onStart }: SetupFormProps) {
               aria-pressed={settings.amount === n}
               onClick={() => set("amount", n)}
               className={cn(
-                "flex-1 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2",
-                settings.amount === n
-                  ? "bg-[#FF6B6B] text-gray-900"
-                  : "bg-[#F5EEE6] text-gray-700 hover:bg-[#EDE4D8]",
+                toggleClass,
+                settings.amount === n ? toggleOn : toggleOff,
               )}
             >
               {n}
@@ -204,10 +227,8 @@ export function SetupForm({ onStart }: SetupFormProps) {
               aria-pressed={settings.difficulty === d.value}
               onClick={() => set("difficulty", d.value)}
               className={cn(
-                "flex-1 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2",
-                settings.difficulty === d.value
-                  ? "bg-[#FF6B6B] text-gray-900"
-                  : "bg-[#F5EEE6] text-gray-700 hover:bg-[#EDE4D8]",
+                toggleClass,
+                settings.difficulty === d.value ? toggleOn : toggleOff,
               )}
             >
               {d.label}
@@ -216,12 +237,9 @@ export function SetupForm({ onStart }: SetupFormProps) {
         </div>
       </fieldset>
 
-      <button
-        type="submit"
-        className="mt-1 w-full py-3 rounded-xl bg-[#FF6B6B] hover:bg-[#e85555] text-gray-900 font-semibold text-base transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2"
-      >
+      <Button type="submit" className="mt-1 w-full py-3 text-base">
         Start
-      </button>
+      </Button>
     </form>
   );
 }

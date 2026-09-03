@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Question, UserAnswer } from "@/types";
-import { shuffle } from "@/lib/utils";
 
 export interface GameSnapshot {
   question: Question | null;
-  shuffledAnswers: string[];
+  answerOptions: string[];
   currentIndex: number;
   total: number;
   score: number;
@@ -19,12 +18,6 @@ export function useGame(questions: Question[]): GameSnapshot {
   const [score, setScore] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [feedbackAnswer, setFeedbackAnswer] = useState<string | null>(null);
-
-  const shuffledAnswers = useMemo(() => {
-    const q = questions[currentIndex];
-    if (!q) return [];
-    return shuffle([q.correct_answer, ...q.incorrect_answers]);
-  }, [currentIndex, questions]);
 
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -65,7 +58,7 @@ export function useGame(questions: Question[]): GameSnapshot {
 
   return {
     question: isFinished ? null : questions[currentIndex],
-    shuffledAnswers,
+    answerOptions: isFinished ? [] : questions[currentIndex].answers,
     currentIndex,
     total: questions.length,
     score,
